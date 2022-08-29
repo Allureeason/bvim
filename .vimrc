@@ -130,7 +130,7 @@ let mapleader=','
 
 " 设置注释快捷键
 map <F4> <leader>ci<CR>
-colorscheme onedark
+colorscheme desert
 
 if has('mouse')
     set mouse-=a
@@ -157,3 +157,24 @@ function AddTitleForLua()
     call append(7,"*  @Description: ")
     call append(8,"--]]")
 endfunction
+
+" luacheck 保存时检查lua语法
+function! s:MyBufList()
+    let checkfile = getcwd() . "/tools/gitlab_ci/check_single_file_format.sh"
+    if !filereadable(checkfile)
+        let checkfile = getcwd() . "/tools/check_single_file_format.sh"
+    endif
+
+    if filereadable(checkfile)
+        let cmdstr = "sh " . checkfile . " " . expand('%p')
+        let errmsg = system(cmdstr)
+        if v:shell_error == 1
+            echo errmsg
+        elseif matchstr(errmsg, "0 warnings / 0 errors") == ""
+            echo errmsg
+        endif
+    endif
+endfunction
+
+autocmd BufWritePost *.lua :call s:MyBufList()
+
